@@ -7,7 +7,7 @@ function QuestionForm(props) {
     answer2: "",
     answer3: "",
     answer4: "",
-    correctIndex: "2", // Initial value is "Answer 3"
+    correctIndex: "3", // Initial value is "Answer 3"
   });
 
   const [isMounted, setIsMounted] = useState(true);
@@ -57,7 +57,7 @@ function QuestionForm(props) {
             answer2: "",
             answer3: "",
             answer4: "",
-            correctIndex: "3", // Updated value is "Answer 4"
+            correctIndex: "2", // Updated value is "Answer 4"
           });
         }
       })
