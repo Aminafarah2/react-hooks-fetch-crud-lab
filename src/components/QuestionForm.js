@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function QuestionForm(props) {
   const [formData, setFormData] = useState({
@@ -7,103 +7,133 @@ function QuestionForm(props) {
     answer2: "",
     answer3: "",
     answer4: "",
-    correctIndex: 0,
+    correctIndex: "2", // Initial value is "Answer 3"
   });
 
+  const [isMounted, setIsMounted] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false); // Cleanup to set isMounted to false when unmounted
+  }, []);
+
   function handleChange(event) {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
+    if (isMounted) {
+      setFormData({
+        ...formData,
+        [event.target.name]: event.target.value,
+      });
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    console.log(formData);
+
+    const newQuestionData = {
+      prompt: formData.prompt,
+      answers: [
+        formData.answer1,
+        formData.answer2,
+        formData.answer3,
+        formData.answer4,
+      ],
+      correctIndex: parseInt(formData.correctIndex), // Parsing it to an integer
+    };
+
     fetch("http://localhost:4000/questions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: formData.prompt,
-        answers: [formData.answer1, formData.answer2, formData.answer3, formData.answer4],
-        correctIndex: parseInt(formData.correctIndex), // Parse the correctIndex as an integer
-      }),
+      body: JSON.stringify(newQuestionData),
     })
       .then((response) => response.json())
-      .then((data) => {
-        console.log("Question added:", data);
+      .then((newQuestion) => {
+        if (isMounted) {
+          props.onAddQuestion(newQuestion);
+          setFormData({
+            prompt: "",
+            answer1: "",
+            answer2: "",
+            answer3: "",
+            answer4: "",
+            correctIndex: "3", // Updated value is "Answer 4"
+          });
+        }
       })
       .catch((error) => {
-        console.error("Error adding question:", error);
+        if (isMounted) {
+          console.error("Error adding question:", error);
+        }
       });
-
   }
-    
 
   return (
     <section>
       <h1>New Question</h1>
       <form onSubmit={handleSubmit}>
-        <label>
+        <label htmlFor="prompt">
           Prompt:
           <input
             type="text"
+            id="prompt"
             name="prompt"
             value={formData.prompt}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label htmlFor="answer1">
           Answer 1:
           <input
             type="text"
+            id="answer1"
             name="answer1"
             value={formData.answer1}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label htmlFor="answer2">
           Answer 2:
           <input
             type="text"
+            id="answer2"
             name="answer2"
             value={formData.answer2}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label htmlFor="answer3">
           Answer 3:
           <input
             type="text"
+            id="answer3"
             name="answer3"
             value={formData.answer3}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label htmlFor="answer4">
           Answer 4:
           <input
             type="text"
+            id="answer4"
             name="answer4"
             value={formData.answer4}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label htmlFor="correctIndex">
           Correct Answer:
           <select
+            id="correctIndex"
             name="correctIndex"
             value={formData.correctIndex}
             onChange={handleChange}
           >
-            <option value="0">{formData.answer1}</option> 
-             <option value="1">{formData.answer2}</option> 
-             <option value="2">{formData.answer3}</option> 
-             <option value="3">{formData.answer4}</option> 
-            
-            
+            <option value="0">Answer 1</option>
+            <option value="1">Answer 2</option>
+            <option value="2">Answer 3</option>
+            <option value="3">Answer 4</option>
           </select>
         </label>
         <button type="submit">Add Question</button>
